@@ -150,16 +150,18 @@ FROM
 The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
 
-SELECT facility.name AS facility_name,
-SUM(CASE
-    WHEN member.memid = 0 THEN facility.guestcost *  slots 
-    ELSE facility.membercost * slots
-    END) AS revenue
-FROM country_club.Facilities facility
-     JOIN country_club.Bookings booking
-        ON booking.facid = facility.facid
-     JOIN country_club.Members member
-        ON member.memid = booking.memid
--- NEED FILTER HERE TO FILTER REVENUE OVER 1000
-GROUP BY 1 
-ORDER BY 2
+SELECT name AS facility_name, 
+revenue 
+FROM 
+    (SELECT
+    name,
+    SUM(CASE
+        WHEN memid = 0 THEN guestcost *  slots 
+        ELSE membercost * slots
+        END) AS revenue
+    FROM country_club.Facilities facility
+        INNER JOIN country_club.Bookings booking
+            ON booking.facid = facility.facid
+    GROUP BY name) AS inner_table
+WHERE revenue < 1000
+ORDER BY revenue
